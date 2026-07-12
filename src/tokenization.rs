@@ -1,8 +1,6 @@
-#[allow(non_camel_case_types)]
 #[derive(Debug)]
-pub(crate) enum TokenType {
-    // Single-character tokens.
-    lEFT_PARAN,
+pub(crate) enum TokenKind {
+    LEFT_PARAN,
     RIGHT_PARAN,
     LEFT_BRACE,
     RIGHT_BRACE,
@@ -13,8 +11,6 @@ pub(crate) enum TokenType {
     SEMICOLON,
     SLASH,
     STAR,
-
-    // One of two char tokens
     BANG,
     BANG_EQUAL,
     EQUAL,
@@ -23,13 +19,9 @@ pub(crate) enum TokenType {
     GREATER_EQUAL,
     LESS,
     LESS_EQUAL,
-
-    // literals
     LITERALS,
     IDENTIFIERS,
     NUMBER,
-
-    // keywords
     AND,
     CLASS,
     ELSE,
@@ -46,21 +38,55 @@ pub(crate) enum TokenType {
     TRUE,
     VAR,
     WHILE,
-
     EOF,
 }
 
-pub(crate) struct Token {
-    token: TokenType,
+struct Token {
+    kind: TokenKind,
     lexeme: String,
     literal: String,
-    line: u8,
+    line: u32,
 }
 
-impl Token {
-    fn print(&self) {
-        println!("{:?} {:?} {:?}", self.token, self.lexeme, self.literal)
+struct Scanner {
+    source: Vec<char>,
+    tokens: Vec<Token>,
+    start: usize,
+    current: usize,
+    line: u32,
+}
+
+impl Scanner {
+    fn new(source: &str) -> Self {
+        Self {
+            source: source.chars().collect(),
+            tokens: vec![],
+            start: 0,
+            current: 0,
+            line: 1,
+        }
+    }
+
+    fn advance(&mut self) -> char {
+        let prev = self.current;
+        self.current += 1;
+        return self.source[prev];
+    }
+
+    fn peak(&self) -> Option<char> {
+        if self.current >= self.source.len() {
+            return None;
+        }
+        Some(self.source[self.current])
+    }
+
+    fn scan_token(&mut self) -> Vec<Token> {
+        while self.current < self.source.len() {
+            self.start = self.current;
+            let c = self.advance();
+
+            match c {}
+        }
+        vec![]
     }
 }
-
-pub(crate) fn scan_tokens(file_content: &str) {}
