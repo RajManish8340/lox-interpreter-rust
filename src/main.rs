@@ -1,9 +1,9 @@
-use std::{
-    fs::{self},
-    io::{self, Write},
-};
+mod tokenization;
+use std::fs::{self};
 
 use clap::Parser;
+
+use crate::tokenization::Scanner;
 
 #[derive(Parser)]
 struct Args {
@@ -13,6 +13,16 @@ struct Args {
 
 pub fn main() {
     let args = Args::parse();
+    let file_content = read_file(args.file_name.as_str());
+    let mut scanner = Scanner::new(&file_content);
+    let tokens = Scanner::scan_token(&mut scanner);
+
+    for token in &tokens {
+        print!(
+            "{:?} {} {} {} \r\n",
+            token.kind, token.lexeme, token.literal, token.line
+        );
+    }
 }
 
 fn read_file(file_name: &str) -> String {

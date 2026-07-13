@@ -1,7 +1,8 @@
-#[derive(Debug)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone)]
 pub(crate) enum TokenKind {
-    LEFT_PARAN,
-    RIGHT_PARAN,
+    LEFT_PAREN,
+    RIGHT_PAREN,
     LEFT_BRACE,
     RIGHT_BRACE,
     DOT,
@@ -41,23 +42,35 @@ pub(crate) enum TokenKind {
     EOF,
 }
 
-struct Token {
-    kind: TokenKind,
-    lexeme: String,
-    literal: String,
-    line: u32,
+#[derive(Clone)]
+pub(crate) struct Token {
+    pub(crate) kind: TokenKind,
+    pub(crate) lexeme: String,
+    pub(crate) literal: String,
+    pub(crate) line: usize,
 }
 
-struct Scanner {
+impl Token {
+    fn new(kind: TokenKind, lexeme: String, line: usize) -> Self {
+        Self {
+            kind,
+            lexeme,
+            literal: String::from("null"),
+            line,
+        }
+    }
+}
+
+pub(crate) struct Scanner {
     source: Vec<char>,
     tokens: Vec<Token>,
     start: usize,
     current: usize,
-    line: u32,
+    line: usize,
 }
 
 impl Scanner {
-    fn new(source: &str) -> Self {
+    pub(crate) fn new(source: &str) -> Self {
         Self {
             source: source.chars().collect(),
             tokens: vec![],
@@ -80,13 +93,58 @@ impl Scanner {
         Some(self.source[self.current])
     }
 
-    fn scan_token(&mut self) -> Vec<Token> {
+    pub(crate) fn scan_token(&mut self) -> Vec<Token> {
         while self.current < self.source.len() {
             self.start = self.current;
             let c = self.advance();
 
-            match c {}
+            match c {
+                '\n' => self.line = self.line + 1,
+                ' ' => {}
+                '\r' => {}
+                '\t' => {}
+                '(' => {
+                    self.tokens
+                        .push(Token::new(TokenKind::LEFT_PAREN, c.to_string(), self.line))
+                }
+                ')' => {
+                    self.tokens
+                        .push(Token::new(TokenKind::RIGHT_PAREN, c.to_string(), self.line))
+                }
+                '{' => {
+                    self.tokens
+                        .push(Token::new(TokenKind::LEFT_BRACE, c.to_string(), self.line))
+                }
+                '}' => {
+                    self.tokens
+                        .push(Token::new(TokenKind::RIGHT_BRACE, c.to_string(), self.line))
+                }
+                ',' => self
+                    .tokens
+                    .push(Token::new(TokenKind::COMMA, c.to_string(), self.line)),
+                '.' => self
+                    .tokens
+                    .push(Token::new(TokenKind::DOT, c.to_string(), self.line)),
+                '-' => self
+                    .tokens
+                    .push(Token::new(TokenKind::MINUS, c.to_string(), self.line)),
+                '+' => self
+                    .tokens
+                    .push(Token::new(TokenKind::PLUS, c.to_string(), self.line)),
+                ';' => self
+                    .tokens
+                    .push(Token::new(TokenKind::SEMICOLON, c.to_string(), self.line)),
+                '/' => self
+                    .tokens
+                    .push(Token::new(TokenKind::SLASH, c.to_string(), self.line)),
+                '*' => self
+                    .tokens
+                    .push(Token::new(TokenKind::STAR, c.to_string(), self.line)),
+                _ => panic!(),
+            }
         }
-        vec![]
+        self.tokens
+            .push(Token::new(TokenKind::EOF, ' '.to_string(), self.line));
+        self.tokens.clone()
     }
 }
