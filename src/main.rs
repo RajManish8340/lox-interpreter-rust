@@ -1,9 +1,10 @@
+mod errors;
 mod tokenization;
 use std::fs::{self};
 
-use clap::{Parser, error};
+use clap::Parser;
 
-use crate::tokenization::Scanner;
+use crate::{errors::HAS_ERRORS, tokenization::Scanner};
 
 #[derive(Parser)]
 struct Args {
@@ -16,14 +17,25 @@ pub fn main() {
     let file_content = read_file(args.file_name.as_str());
     let mut scanner = Scanner::new(&file_content);
     if args.command == "tokenize" {
-        let (tokens, erros) = Scanner::scan_token(&mut scanner);
+        let (tokens, errors) = Scanner::scan_token(&mut scanner);
 
-        for error in &erros {
+        for error in &errors {
             print!(
                 "[line {}] Error: Unexpected character: {}\r\n",
                 error.line, error.character
             );
         }
+
+        if !errors.is_empty() {
+            *errors::HAS_ERRORS
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner()) = true;
+        }
+
+        print!(
+            "\r\n\r\nData mean if it contains errors or not -> {:?}\r\n\r\n",
+            HAS_ERRORS
+        );
 
         for token in &tokens {
             print!(

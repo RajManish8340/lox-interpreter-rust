@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone)]
 pub(crate) enum TokenKind {
@@ -154,11 +156,64 @@ impl Scanner {
                 '*' => self
                     .tokens
                     .push(Token::new(TokenKind::STAR, c.to_string(), self.line)),
+                '!' => {
+                    if self.peak() == Some('=') {
+                        self.tokens.push(Token::new(
+                            TokenKind::BANG_EQUAL,
+                            format!("{}=", c),
+                            self.line,
+                        ));
+                        self.advance();
+                    } else {
+                        self.tokens
+                            .push(Token::new(TokenKind::BANG, c.to_string(), self.line));
+                    }
+                }
+                '=' => {
+                    if self.peak() == Some('=') {
+                        self.tokens.push(Token::new(
+                            TokenKind::EQUAL_EQUAL,
+                            format!("{}=", c),
+                            self.line,
+                        ));
+                        self.advance();
+                    } else {
+                        self.tokens
+                            .push(Token::new(TokenKind::EQUAL, c.to_string(), self.line));
+                    }
+                }
+                '<' => {
+                    if self.peak() == Some('=') {
+                        self.tokens.push(Token::new(
+                            TokenKind::LESS_EQUAL,
+                            format!("{}=", c),
+                            self.line,
+                        ));
+                        self.advance();
+                    } else {
+                        self.tokens
+                            .push(Token::new(TokenKind::LESS, c.to_string(), self.line));
+                    }
+                }
+                '>' => {
+                    if self.peak() == Some('=') {
+                        self.tokens.push(Token::new(
+                            TokenKind::GREATER_EQUAL,
+                            format!("{}=", c),
+                            self.line,
+                        ));
+                        self.advance();
+                    } else {
+                        self.tokens
+                            .push(Token::new(TokenKind::GREATER, c.to_string(), self.line));
+                    }
+                }
                 other => self
                     .errors
                     .push(LexicalError::new(other.to_string(), self.line)),
             }
         }
+
         self.tokens
             .push(Token::new(TokenKind::EOF, ' '.to_string(), self.line));
         (self.tokens.clone(), self.errors.clone())
