@@ -150,9 +150,6 @@ impl Scanner {
                 ';' => self
                     .tokens
                     .push(Token::new(TokenKind::SEMICOLON, c.to_string(), self.line)),
-                '/' => self
-                    .tokens
-                    .push(Token::new(TokenKind::SLASH, c.to_string(), self.line)),
                 '*' => self
                     .tokens
                     .push(Token::new(TokenKind::STAR, c.to_string(), self.line)),
@@ -206,6 +203,17 @@ impl Scanner {
                     } else {
                         self.tokens
                             .push(Token::new(TokenKind::GREATER, c.to_string(), self.line));
+                    }
+                }
+                '/' => {
+                    if self.peak() == Some('/') {
+                        while self.peak() != Some('\n') && self.current < self.source.len() {
+                            self.advance();
+                        }
+                        self.advance();
+                    } else {
+                        self.tokens
+                            .push(Token::new(TokenKind::SLASH, c.to_string(), self.line));
                     }
                 }
                 other => self
