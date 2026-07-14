@@ -61,9 +61,22 @@ impl Token {
     }
 }
 
+#[derive(Clone)]
+pub(crate) struct LexicalError {
+    pub(crate) character: String,
+    pub(crate) line: usize,
+}
+
+impl LexicalError {
+    pub(crate) fn new(character: String, line: usize) -> Self {
+        Self { character, line }
+    }
+}
+
 pub(crate) struct Scanner {
     source: Vec<char>,
     tokens: Vec<Token>,
+    errors: Vec<LexicalError>,
     start: usize,
     current: usize,
     line: usize,
@@ -74,6 +87,7 @@ impl Scanner {
         Self {
             source: source.chars().collect(),
             tokens: vec![],
+            errors: vec![],
             start: 0,
             current: 0,
             line: 1,
@@ -93,7 +107,7 @@ impl Scanner {
         Some(self.source[self.current])
     }
 
-    pub(crate) fn scan_token(&mut self) -> Vec<Token> {
+    pub(crate) fn scan_token(&mut self) -> (Vec<Token>, Vec<LexicalError>) {
         while self.current < self.source.len() {
             self.start = self.current;
             let c = self.advance();
@@ -140,11 +154,13 @@ impl Scanner {
                 '*' => self
                     .tokens
                     .push(Token::new(TokenKind::STAR, c.to_string(), self.line)),
-                _ => panic!(),
+                other => self
+                    .errors
+                    .push(LexicalError::new(other.to_string(), self.line)),
             }
         }
         self.tokens
             .push(Token::new(TokenKind::EOF, ' '.to_string(), self.line));
-        self.tokens.clone()
+        (self.tokens.clone(), self.errors.clone())
     }
 }

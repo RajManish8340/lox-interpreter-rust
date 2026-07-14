@@ -1,7 +1,7 @@
 mod tokenization;
 use std::fs::{self};
 
-use clap::Parser;
+use clap::{Parser, error};
 
 use crate::tokenization::Scanner;
 
@@ -15,13 +15,24 @@ pub fn main() {
     let args = Args::parse();
     let file_content = read_file(args.file_name.as_str());
     let mut scanner = Scanner::new(&file_content);
-    let tokens = Scanner::scan_token(&mut scanner);
+    if args.command == "tokenize" {
+        let (tokens, erros) = Scanner::scan_token(&mut scanner);
 
-    for token in &tokens {
-        print!(
-            "{:?} {} {} {} \r\n",
-            token.kind, token.lexeme, token.literal, token.line
-        );
+        for error in &erros {
+            print!(
+                "[line {}] Error: Unexpected character: {}\r\n",
+                error.line, error.character
+            );
+        }
+
+        for token in &tokens {
+            print!(
+                "{:?} {} {} {} \r\n",
+                token.kind, token.lexeme, token.literal, token.line
+            );
+        }
+    } else {
+        print!("not a valid command")
     }
 }
 
