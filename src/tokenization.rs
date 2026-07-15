@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone)]
 pub(crate) enum TokenKind {
@@ -22,8 +20,8 @@ pub(crate) enum TokenKind {
     GREATER_EQUAL,
     LESS,
     LESS_EQUAL,
-    LITERALS,
     IDENTIFIERS,
+    STRING,
     NUMBER,
     AND,
     CLASS,
@@ -61,17 +59,30 @@ impl Token {
             line,
         }
     }
+    fn with_literal(kind: TokenKind, lexeme: String, literal: String, line: usize) -> Self {
+        Self {
+            kind,
+            lexeme,
+            literal,
+            line,
+        }
+    }
 }
 
 #[derive(Clone)]
 pub(crate) struct LexicalError {
     pub(crate) character: String,
     pub(crate) line: usize,
+    pub(crate) message: String,
 }
 
 impl LexicalError {
-    pub(crate) fn new(character: String, line: usize) -> Self {
-        Self { character, line }
+    pub(crate) fn new(character: String, line: usize, message: String) -> Self {
+        Self {
+            character,
+            line,
+            message,
+        }
     }
 }
 
@@ -107,6 +118,45 @@ impl Scanner {
             return None;
         }
         Some(self.source[self.current])
+    }
+    fn is_at_end(&self) -> bool {
+        if self.current >= self.source.len() {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn string(&mut self) {
+        while self.peak() != Some('"') && !self.is_at_end() {
+            if self.peak() == Some('\n') {
+                self.line += 1;
+            }
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            self.errors.push(LexicalError::new(
+                String::from(r#"""#),
+                self.line,
+                String::from("Unterminated String"),
+            ));
+            return;
+        }
+
+        self.advance();
+        let literal: String = self.source[self.start + 1..self.current - 1]
+            .iter()
+            .collect();
+
+        let lexeme: String = self.source[self.start..self.current].iter().collect();
+
+        self.tokens.push(Token::with_literal(
+            TokenKind::STRING,
+            lexeme,
+            literal,
+            self.line,
+        ));
     }
 
     pub(crate) fn scan_token(&mut self) -> (Vec<Token>, Vec<LexicalError>) {
@@ -207,7 +257,7 @@ impl Scanner {
                 }
                 '/' => {
                     if self.peak() == Some('/') {
-                        while self.peak() != Some('\n') && self.current < self.source.len() {
+                        while self.peak() != Some('\n') && !self.is_at_end() {
                             self.advance();
                         }
                         self.advance();
@@ -216,9 +266,14 @@ impl Scanner {
                             .push(Token::new(TokenKind::SLASH, c.to_string(), self.line));
                     }
                 }
-                other => self
-                    .errors
-                    .push(LexicalError::new(other.to_string(), self.line)),
+                '"' => {
+                    self.string();
+                }
+                other => self.errors.push(LexicalError::new(
+                    other.to_string(),
+                    self.line,
+                    String::from("Unexpected character"),
+                )),
             }
         }
 

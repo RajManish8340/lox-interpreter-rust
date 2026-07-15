@@ -21,8 +21,8 @@ pub fn main() {
 
         for error in &errors {
             print!(
-                "[line {}] Error: Unexpected character: {}\r\n",
-                error.line, error.character
+                "[line {}] Error: {}: {}\r\n",
+                error.line, error.message, error.character
             );
         }
 
@@ -33,7 +33,7 @@ pub fn main() {
         }
 
         print!(
-            "\r\n\r\nData mean if it contains errors or not -> {:?}\r\n\r\n",
+            "\r\n\r\nthe value of 'data' means if it contains errors or not -> {:?}\r\n\r\n",
             HAS_ERRORS
         );
 
