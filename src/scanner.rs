@@ -1,108 +1,8 @@
-use core::fmt;
+use std::char;
 
-use clap::builder::Str;
+use crate::tokens::{LexicalError, LiteralType, Token, TokenKind};
 
-#[allow(non_camel_case_types)]
 #[derive(Debug, Clone)]
-pub(crate) enum TokenKind {
-    LEFT_PAREN,
-    RIGHT_PAREN,
-    LEFT_BRACE,
-    RIGHT_BRACE,
-    DOT,
-    COMMA,
-    MINUS,
-    PLUS,
-    SEMICOLON,
-    SLASH,
-    STAR,
-    BANG,
-    BANG_EQUAL,
-    EQUAL,
-    EQUAL_EQUAL,
-    GREATER,
-    GREATER_EQUAL,
-    LESS,
-    LESS_EQUAL,
-    IDENTIFIERS,
-    STRING,
-    NUMBER,
-    AND,
-    CLASS,
-    ELSE,
-    FALSE,
-    FUN,
-    FOR,
-    IF,
-    NIL,
-    OR,
-    PRINT,
-    RETURN,
-    SUPER,
-    THIS,
-    TRUE,
-    VAR,
-    WHILE,
-    EOF,
-}
-
-#[derive(Clone, Debug)]
-pub(crate) enum LiteralType {
-    String(String),
-    Number(f64),
-}
-
-impl fmt::Display for LiteralType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            LiteralType::String(s) => write!(f, "{}", s),
-            LiteralType::Number(n) => {
-                if n.fract() == 0.0 {
-                    write!(f, "{}.0", n)
-                } else {
-                    write!(f, "{}", n)
-                }
-            }
-        }
-    }
-}
-
-#[derive(Clone)]
-pub(crate) struct Token {
-    pub(crate) kind: TokenKind,
-    pub(crate) lexeme: String,
-    pub(crate) literal: Option<LiteralType>,
-    pub(crate) line: usize,
-}
-
-impl Token {
-    fn new(kind: TokenKind, lexeme: String, literal: Option<LiteralType>, line: usize) -> Self {
-        Self {
-            kind,
-            lexeme,
-            literal,
-            line,
-        }
-    }
-}
-
-#[derive(Clone)]
-pub(crate) struct LexicalError {
-    pub(crate) character: String,
-    pub(crate) line: usize,
-    pub(crate) message: String,
-}
-
-impl LexicalError {
-    pub(crate) fn new(character: String, line: usize, message: String) -> Self {
-        Self {
-            character,
-            line,
-            message,
-        }
-    }
-}
-
 pub(crate) struct Scanner {
     source: Vec<char>,
     tokens: Vec<Token>,
@@ -117,6 +17,14 @@ fn is_digit(c: char) -> bool {
         '0'..='9' => return true,
         _ => return false,
     }
+}
+
+fn is_alpha(c: char) -> bool {
+    return matches!(c, 'a'..='z' | 'A'..='Z' | '_');
+}
+
+fn is_alpha_numeric(c: char) -> bool {
+    return is_digit(c) | is_alpha(c);
 }
 
 impl Scanner {
@@ -214,6 +122,36 @@ impl Scanner {
             self.line,
         ));
     }
+
+    fn identifier(&mut self) {
+        while is_alpha_numeric(self.peak()) {
+            self.advance();
+        }
+        let lexeme: String = self.source[self.start..self.current].iter().collect();
+
+        let kind = match lexeme.as_str() {
+            "and" => TokenKind::AND,
+            "class" => TokenKind::CLASS,
+            "else" => TokenKind::ELSE,
+            "false" => TokenKind::FALSE,
+            "for" => TokenKind::FOR,
+            "fun" => TokenKind::FUN,
+            "if" => TokenKind::IF,
+            "nil" => TokenKind::NIL,
+            "or" => TokenKind::OR,
+            "print" => TokenKind::PRINT,
+            "return" => TokenKind::RETURN,
+            "super" => TokenKind::SUPER,
+            "this" => TokenKind::THIS,
+            "true" => TokenKind::TRUE,
+            "var" => TokenKind::VAR,
+            "while" => TokenKind::WHILE,
+            _ => TokenKind::IDENTIFIER,
+        };
+
+        self.tokens.push(Token::new(kind, lexeme, None, self.line));
+    }
+
     pub(crate) fn scan_token(&mut self) -> (Vec<Token>, Vec<LexicalError>) {
         while self.current < self.source.len() {
             self.start = self.current;
@@ -378,6 +316,9 @@ impl Scanner {
 
                 '0'..='9' => {
                     self.number();
+                }
+                'a'..='z' | 'A'..='Z' | '_' => {
+                    self.identifier();
                 }
                 other => self.errors.push(LexicalError::new(
                     other.to_string(),

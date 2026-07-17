@@ -1,10 +1,11 @@
 mod errors;
-mod tokenization;
+mod scanner;
+mod tokens;
 use std::fs::{self};
 
 use clap::Parser;
 
-use crate::{errors::HAS_ERRORS, tokenization::Scanner};
+use crate::{errors::HAS_ERRORS, scanner::Scanner};
 
 #[derive(Parser)]
 struct Args {
@@ -41,7 +42,7 @@ pub fn main() {
             let literal = token
                 .literal
                 .to_owned()
-                .unwrap_or_else(|| tokenization::LiteralType::String("null".to_string()));
+                .unwrap_or_else(|| tokens::LiteralType::String("null".to_string()));
             print!(
                 "{:?} {} {} {} \r\n",
                 token.kind, token.lexeme, literal, token.line
