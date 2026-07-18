@@ -129,7 +129,7 @@ impl Scanner {
         }
         let lexeme: String = self.source[self.start..self.current].iter().collect();
 
-        let kind = match lexeme.as_str() {
+        let kind: TokenKind = match lexeme.as_str() {
             "and" => TokenKind::AND,
             "class" => TokenKind::CLASS,
             "else" => TokenKind::ELSE,
@@ -300,6 +300,25 @@ impl Scanner {
                         if !self.is_at_end() {
                             self.advance();
                         }
+                    } else if self.peak() == '*' {
+                        self.advance();
+                        while !(self.peak() == '*' && self.peak_next() == '/') && !self.is_at_end()
+                        {
+                            if self.peak() == '\n' {
+                                self.line += 1;
+                            }
+                            self.advance();
+                        }
+                        if self.is_at_end() {
+                            self.errors.push(LexicalError::new(
+                                "*/".to_string(),
+                                self.line - 1,
+                                String::from("block comment not closed"),
+                            ));
+                            continue;
+                        }
+                        self.advance();
+                        self.advance();
                     } else {
                         self.tokens.push(Token::new(
                             TokenKind::SLASH,
