@@ -1,11 +1,11 @@
 use std::char;
 
-use crate::tokens::{LexicalError, LiteralType, Token, TokenKind};
+use crate::token::{LexicalError, LiteralType, Token, TokenKind};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Scanner {
     source: Vec<char>,
-    tokens: Vec<Token>,
+    pub(crate) tokens: Vec<Token>,
     errors: Vec<LexicalError>,
     start: usize,
     current: usize,
@@ -93,7 +93,7 @@ impl Scanner {
         let lexeme: String = self.source[self.start..self.current].iter().collect();
 
         self.tokens.push(Token::new(
-            TokenKind::STRING,
+            TokenKind::String,
             lexeme,
             Some(LiteralType::String(literal)),
             self.line,
@@ -116,7 +116,7 @@ impl Scanner {
             .unwrap_or_else(|_| 0.0000000000);
         let literal = lexeme;
         self.tokens.push(Token::new(
-            TokenKind::NUMBER,
+            TokenKind::Number,
             lexeme.to_string(),
             Some(LiteralType::Number(literal)),
             self.line,
@@ -130,23 +130,23 @@ impl Scanner {
         let lexeme: String = self.source[self.start..self.current].iter().collect();
 
         let kind: TokenKind = match lexeme.as_str() {
-            "and" => TokenKind::AND,
-            "class" => TokenKind::CLASS,
-            "else" => TokenKind::ELSE,
-            "false" => TokenKind::FALSE,
-            "for" => TokenKind::FOR,
-            "fun" => TokenKind::FUN,
-            "if" => TokenKind::IF,
-            "nil" => TokenKind::NIL,
-            "or" => TokenKind::OR,
-            "print" => TokenKind::PRINT,
-            "return" => TokenKind::RETURN,
-            "super" => TokenKind::SUPER,
-            "this" => TokenKind::THIS,
-            "true" => TokenKind::TRUE,
-            "var" => TokenKind::VAR,
-            "while" => TokenKind::WHILE,
-            _ => TokenKind::IDENTIFIER,
+            "and" => TokenKind::And,
+            "class" => TokenKind::Class,
+            "else" => TokenKind::Else,
+            "false" => TokenKind::False,
+            "for" => TokenKind::For,
+            "fun" => TokenKind::Fun,
+            "if" => TokenKind::If,
+            "nil" => TokenKind::Nil,
+            "or" => TokenKind::Or,
+            "print" => TokenKind::Print,
+            "return" => TokenKind::Return,
+            "super" => TokenKind::Super,
+            "this" => TokenKind::This,
+            "true" => TokenKind::True,
+            "var" => TokenKind::Var,
+            "while" => TokenKind::While,
+            _ => TokenKind::Identifier,
         };
 
         self.tokens.push(Token::new(kind, lexeme, None, self.line));
@@ -163,25 +163,25 @@ impl Scanner {
                 '\r' => {}
                 '\t' => {}
                 '(' => self.tokens.push(Token::new(
-                    TokenKind::LEFT_PAREN,
+                    TokenKind::LeftParen,
                     c.to_string(),
                     None,
                     self.line,
                 )),
                 ')' => self.tokens.push(Token::new(
-                    TokenKind::RIGHT_PAREN,
+                    TokenKind::RightParen,
                     c.to_string(),
                     None,
                     self.line,
                 )),
                 '{' => self.tokens.push(Token::new(
-                    TokenKind::LEFT_BRACE,
+                    TokenKind::LeftBrace,
                     c.to_string(),
                     None,
                     self.line,
                 )),
                 '}' => self.tokens.push(Token::new(
-                    TokenKind::RIGHT_BRACE,
+                    TokenKind::RightBrace,
                     c.to_string(),
                     None,
                     self.line,
@@ -189,34 +189,34 @@ impl Scanner {
 
                 ',' => {
                     self.tokens
-                        .push(Token::new(TokenKind::COMMA, c.to_string(), None, self.line))
+                        .push(Token::new(TokenKind::Comma, c.to_string(), None, self.line))
                 }
                 '.' => self
                     .tokens
-                    .push(Token::new(TokenKind::DOT, c.to_string(), None, self.line)),
+                    .push(Token::new(TokenKind::Dot, c.to_string(), None, self.line)),
                 '-' => {
                     self.tokens
-                        .push(Token::new(TokenKind::MINUS, c.to_string(), None, self.line))
+                        .push(Token::new(TokenKind::Minus, c.to_string(), None, self.line))
                 }
                 '+' => {
                     self.tokens
-                        .push(Token::new(TokenKind::PLUS, c.to_string(), None, self.line))
+                        .push(Token::new(TokenKind::Plus, c.to_string(), None, self.line))
                 }
                 ';' => self.tokens.push(Token::new(
-                    TokenKind::SEMICOLON,
+                    TokenKind::Semicolon,
                     c.to_string(),
                     None,
                     self.line,
                 )),
                 '*' => {
                     self.tokens
-                        .push(Token::new(TokenKind::STAR, c.to_string(), None, self.line))
+                        .push(Token::new(TokenKind::Star, c.to_string(), None, self.line))
                 }
 
                 '!' => {
                     if self.peak() == '=' {
                         self.tokens.push(Token::new(
-                            TokenKind::BANG_EQUAL,
+                            TokenKind::BangEqual,
                             format!("{}=", c),
                             None,
                             self.line,
@@ -224,7 +224,7 @@ impl Scanner {
                         self.advance();
                     } else {
                         self.tokens.push(Token::new(
-                            TokenKind::BANG,
+                            TokenKind::Bang,
                             c.to_string(),
                             None,
                             self.line,
@@ -235,7 +235,7 @@ impl Scanner {
                 '=' => {
                     if self.peak() == '=' {
                         self.tokens.push(Token::new(
-                            TokenKind::EQUAL_EQUAL,
+                            TokenKind::EqualEqual,
                             format!("{}=", c),
                             None,
                             self.line,
@@ -243,7 +243,7 @@ impl Scanner {
                         self.advance();
                     } else {
                         self.tokens.push(Token::new(
-                            TokenKind::EQUAL,
+                            TokenKind::EqualEqual,
                             c.to_string(),
                             None,
                             self.line,
@@ -254,7 +254,7 @@ impl Scanner {
                 '<' => {
                     if self.peak() == '=' {
                         self.tokens.push(Token::new(
-                            TokenKind::LESS_EQUAL,
+                            TokenKind::LessEqual,
                             format!("{}=", c),
                             None,
                             self.line,
@@ -262,7 +262,7 @@ impl Scanner {
                         self.advance();
                     } else {
                         self.tokens.push(Token::new(
-                            TokenKind::LESS,
+                            TokenKind::Less,
                             c.to_string(),
                             None,
                             self.line,
@@ -273,7 +273,7 @@ impl Scanner {
                 '>' => {
                     if self.peak() == '=' {
                         self.tokens.push(Token::new(
-                            TokenKind::GREATER_EQUAL,
+                            TokenKind::GreaterEqual,
                             format!("{}=", c),
                             None,
                             self.line,
@@ -281,7 +281,7 @@ impl Scanner {
                         self.advance();
                     } else {
                         self.tokens.push(Token::new(
-                            TokenKind::GREATER,
+                            TokenKind::Greater,
                             c.to_string(),
                             None,
                             self.line,
@@ -321,7 +321,7 @@ impl Scanner {
                         self.advance();
                     } else {
                         self.tokens.push(Token::new(
-                            TokenKind::SLASH,
+                            TokenKind::Slash,
                             c.to_string(),
                             None,
                             self.line,
@@ -348,7 +348,7 @@ impl Scanner {
         }
 
         self.tokens
-            .push(Token::new(TokenKind::EOF, ' '.to_string(), None, self.line));
+            .push(Token::new(TokenKind::Eof, ' '.to_string(), None, self.line));
         (self.tokens.clone(), self.errors.clone())
     }
 }

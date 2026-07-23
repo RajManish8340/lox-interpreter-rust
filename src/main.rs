@@ -1,6 +1,9 @@
+mod ast;
+mod common;
 mod errors;
+mod parse;
 mod scanner;
-mod tokens;
+mod token;
 use std::fs::{self};
 
 use clap::Parser;
@@ -42,7 +45,7 @@ pub fn main() {
             let literal = token
                 .literal
                 .to_owned()
-                .unwrap_or_else(|| tokens::LiteralType::String("null".to_string()));
+                .unwrap_or_else(|| token::LiteralType::String("null".to_string()));
             print!(
                 "{:?} {} {} {} \r\n",
                 token.kind, token.lexeme, literal, token.line
