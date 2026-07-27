@@ -8,7 +8,7 @@ use std::fs::{self};
 
 use clap::Parser;
 
-use crate::{errors::HAS_ERRORS, scanner::Scanner};
+use crate::{errors::HAS_ERRORS, parse::AstParser, scanner::Scanner, token::TokenKind};
 
 #[derive(Parser)]
 struct Args {
@@ -20,39 +20,51 @@ pub fn main() {
     let args = Args::parse();
     let file_content = read_file(args.file_name.as_str());
     let mut scanner = Scanner::new(&file_content);
-    if args.command == "tokenize" {
-        let (tokens, errors) = Scanner::scan_token(&mut scanner);
+    let (tokens, errors) = Scanner::scan_token(&mut scanner);
 
-        for error in &errors {
-            print!(
-                "[line {}] Error: {}: {}\r\n",
-                error.line, error.message, error.character
-            );
-        }
-
-        if !errors.is_empty() {
-            *errors::HAS_ERRORS
-                .lock()
-                .unwrap_or_else(|poisoned| poisoned.into_inner()) = true;
-        }
-
+    for error in &errors {
         print!(
-            "\r\n\r\nthe value of 'data' means if it contains errors or not -> {:?}\r\n\r\n",
-            HAS_ERRORS
+            "[line {}] Error: {}: {}\r\n",
+            error.line, error.message, error.character
         );
+    }
 
-        for token in &tokens {
-            let literal = token
-                .literal
-                .to_owned()
-                .unwrap_or_else(|| token::LiteralType::String("null".to_string()));
-            print!(
-                "{:?} {} {} {} \r\n",
-                token.kind, token.lexeme, literal, token.line
-            );
+    if !errors.is_empty() {
+        *errors::HAS_ERRORS
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = true;
+    }
+
+    print!(
+        "\r\n\r\nthe value of 'data' means if it contains errors or not -> {:?}\r\n\r\n",
+        HAS_ERRORS
+    );
+
+    match args.command.as_str() {
+        "tokenize" => {
+            for token in &tokens {
+                let literal = token
+                    .literal
+                    .to_owned()
+                    .unwrap_or_else(|| token::LiteralType::String("null".to_string()));
+                print!(
+                    "{:?} {} {} {} \r\n",
+                    token.kind, token.lexeme, literal, token.line
+                );
+            }
         }
-    } else {
-        print!("not a valid command")
+        "parse" => {
+            let mut token_kinds: Vec<TokenKind> = vec![];
+            for token in &tokens {
+                let token_kind = &token.kind;
+                token_kinds.push(token_kind.to_owned());
+            }
+            let mut ast_parser = AstParser::new(Box::new(token_kinds), vec![]);
+            ast_parser.parse();
+            ast_parser.print();
+        }
+
+        _ => {}
     }
 }
 
