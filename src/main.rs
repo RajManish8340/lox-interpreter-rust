@@ -53,16 +53,7 @@ pub fn main() {
                 );
             }
         }
-        "parse" => {
-            let mut token_kinds: Vec<TokenKind> = vec![];
-            for token in &tokens {
-                let token_kind = &token.kind;
-                token_kinds.push(token_kind.to_owned());
-            }
-            let mut ast_parser = AstParser::new(Box::new(token_kinds), vec![]);
-            ast_parser.parse();
-            ast_parser.print();
-        }
+        "parse" => {}
 
         _ => {}
     }
