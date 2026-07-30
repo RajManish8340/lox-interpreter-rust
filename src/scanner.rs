@@ -342,7 +342,7 @@ impl Scanner {
                 other => self.errors.push(LexicalError::new(
                     other.to_string(),
                     self.line,
-                    String::from("Unexpected character"),
+                    String::from("Unexpected character while scanning characters"),
                 )),
             }
         }

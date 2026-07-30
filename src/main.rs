@@ -4,11 +4,19 @@ mod errors;
 mod parse;
 mod scanner;
 mod token;
-use std::fs::{self};
+use std::{
+    fs::{self},
+    hint::assert_unchecked,
+};
 
 use clap::Parser;
 
-use crate::{errors::HAS_ERRORS, parse::AstParser, scanner::Scanner, token::TokenKind};
+use crate::{
+    errors::HAS_ERRORS,
+    parse::{AstParser, print_expr},
+    scanner::Scanner,
+    token::TokenKind,
+};
 
 #[derive(Parser)]
 struct Args {
@@ -53,7 +61,13 @@ pub fn main() {
                 );
             }
         }
-        "parse" => {}
+        "parse" => {
+            let mut ast_parser = AstParser::new(tokens, 0);
+            match ast_parser.primary() {
+                Ok(expr) => println!("{}", print_expr(&expr)),
+                Err(e) => println!("{}", e),
+            }
+        }
 
         _ => {}
     }
