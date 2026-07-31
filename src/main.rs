@@ -69,7 +69,9 @@ pub fn main() {
             }
         }
 
-        _ => {}
+        _ => {
+            println!("not a valid command")
+        }
     }
 }
 

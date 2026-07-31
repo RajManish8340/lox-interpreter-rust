@@ -3,7 +3,7 @@ use crate::{
         Expr,
         Literal::{self},
     },
-    token::{Token, TokenKind},
+    token::{LiteralType, Token, TokenKind},
 };
 
 pub(crate) fn print_expr(expr: &Expr) -> String {
@@ -11,7 +11,13 @@ pub(crate) fn print_expr(expr: &Expr) -> String {
         Expr::Literal { value } => match value {
             Literal::Bool(b) => b.to_string(),
             Literal::String(s) => s.to_string(),
-            Literal::Number(n) => n.to_string(),
+            Literal::Number(n) => {
+                if n.fract() == 0.0 {
+                    format!("{:.1}", n)
+                } else {
+                    format!("{}", n)
+                }
+            }
             Literal::Nil => "nil".to_string(),
         },
         //TODO: rest of the match arms
@@ -39,7 +45,7 @@ impl AstParser {
         &self.tokens[self.current]
     }
 
-    pub(crate) fn advance(&mut self) -> &Token {
+    pub(crate) fn return_prev_than_advance(&mut self) -> &Token {
         let prev = self.current;
         self.current += 1;
         &self.tokens[prev]
@@ -47,24 +53,47 @@ impl AstParser {
 
     pub(crate) fn primary(&mut self) -> Result<Expr, String> {
         let kind = &self.tokens[self.current].kind;
+
         match kind {
             TokenKind::True => {
-                self.advance();
+                self.return_prev_than_advance();
                 return Ok(Expr::Literal {
                     value: Literal::Bool(true),
                 });
             }
+
             TokenKind::False => {
-                self.advance();
+                self.return_prev_than_advance();
                 return Ok(Expr::Literal {
                     value: Literal::Bool(false),
                 });
             }
+
             TokenKind::Nil => {
-                self.advance();
+                self.return_prev_than_advance();
                 return Ok(Expr::Literal {
                     value: Literal::Nil,
                 });
+            }
+
+            TokenKind::Number => {
+                let token = self.return_prev_than_advance();
+                match &token.literal {
+                    Some(LiteralType::Number(n)) => Ok(Expr::Literal {
+                        value: Literal::Number(*n),
+                    }),
+                    _ => Err("Expected Number Literal while parsing tokens".to_owned()),
+                }
+            }
+
+            TokenKind::String => {
+                let token = self.return_prev_than_advance();
+                match &token.literal {
+                    Some(LiteralType::String(s)) => Ok(Expr::Literal {
+                        value: Literal::String(s.to_owned()),
+                    }),
+                    _ => Err("Expected String Literal while parsing tokens".to_owned()),
+                }
             }
             _ => Err("Unexpected token while parsing primary".to_owned()),
         }
