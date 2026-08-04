@@ -15,7 +15,6 @@ use crate::{
     errors::HAS_ERRORS,
     parse::{AstParser, print_expr},
     scanner::Scanner,
-    token::TokenKind,
 };
 
 #[derive(Parser)]
@@ -63,7 +62,7 @@ pub fn main() {
         }
         "parse" => {
             let mut ast_parser = AstParser::new(tokens, 0);
-            match ast_parser.primary() {
+            match ast_parser.unary() {
                 Ok(expr) => println!("{}", print_expr(&expr)),
                 Err(e) => println!("{}", e),
             }

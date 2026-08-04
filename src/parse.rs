@@ -2,6 +2,7 @@ use crate::{
     ast::{
         Expr,
         Literal::{self},
+        UnaryOp::{self, Bang, Minus},
     },
     token::{LiteralType, Token, TokenKind},
 };
@@ -20,6 +21,8 @@ pub(crate) fn print_expr(expr: &Expr) -> String {
             }
             Literal::Nil => "nil".to_string(),
         },
+
+        Expr::Unary { op, expr } => format!("({} {})", op.dump(), print_expr(expr)),
         //TODO: rest of the match arms
         _ => "".to_owned(),
     }
@@ -95,7 +98,31 @@ impl AstParser {
                     _ => Err("Expected String Literal while parsing tokens".to_owned()),
                 }
             }
-            _ => Err("Unexpected token while parsing primary".to_owned()),
+
+            _ => Err("Not a Primary token while parsing primary".to_owned()),
+        }
+    }
+
+    pub(crate) fn unary(&mut self) -> Result<Expr, String> {
+        match self.tokens[self.current].kind {
+            TokenKind::Bang => {
+                self.return_prev_than_advance();
+                let inner = self.unary()?;
+                Ok(Expr::Unary {
+                    op: UnaryOp::Bang,
+                    expr: Box::new(inner),
+                })
+            }
+            TokenKind::Minus => {
+                self.return_prev_than_advance();
+                let inner = self.unary()?;
+                Ok(Expr::Unary {
+                    op: UnaryOp::Minus,
+                    expr: Box::new(inner),
+                })
+            }
+
+            _ => self.primary(),
         }
     }
 }
