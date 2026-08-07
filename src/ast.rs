@@ -32,7 +32,7 @@ impl BinaryOp {
         }
     }
 
-    fn dump(&self) -> String {
+    pub(crate) fn dump(&self) -> String {
         match self {
             Self::Plus => String::from("+"),
             Self::Minus => String::from("-"),

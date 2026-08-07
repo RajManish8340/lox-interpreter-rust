@@ -1,8 +1,10 @@
+use std::fmt::Alignment::Left;
+
 use crate::{
     ast::{
-        Expr,
+        BinaryOp, Expr,
         Literal::{self},
-        UnaryOp::{self, Bang, Minus},
+        UnaryOp::{self},
     },
     token::{LiteralType, Token, TokenKind},
 };
@@ -23,6 +25,17 @@ pub(crate) fn print_expr(expr: &Expr) -> String {
         },
 
         Expr::Unary { op, expr } => format!("({} {})", op.dump(), print_expr(expr)),
+
+        Expr::Binary {
+            op,
+            lhs_expr,
+            rhs_expr,
+        } => format!(
+            "({} {} {})",
+            op.dump(),
+            print_expr(lhs_expr),
+            print_expr(rhs_expr)
+        ),
         //TODO: rest of the match arms
         _ => "".to_owned(),
     }
@@ -48,39 +61,40 @@ impl AstParser {
         &self.tokens[self.current]
     }
 
-    pub(crate) fn return_prev_than_advance(&mut self) -> &Token {
+    pub(crate) fn advance(&mut self) -> &Token {
         let prev = self.current;
         self.current += 1;
         &self.tokens[prev]
     }
 
+    // primary → NUMBER | STRING | "true" | "false" | "nil"
     pub(crate) fn primary(&mut self) -> Result<Expr, String> {
         let kind = &self.tokens[self.current].kind;
 
         match kind {
             TokenKind::True => {
-                self.return_prev_than_advance();
+                self.advance();
                 return Ok(Expr::Literal {
                     value: Literal::Bool(true),
                 });
             }
 
             TokenKind::False => {
-                self.return_prev_than_advance();
+                self.advance();
                 return Ok(Expr::Literal {
                     value: Literal::Bool(false),
                 });
             }
 
             TokenKind::Nil => {
-                self.return_prev_than_advance();
+                self.advance();
                 return Ok(Expr::Literal {
                     value: Literal::Nil,
                 });
             }
 
             TokenKind::Number => {
-                let token = self.return_prev_than_advance();
+                let token = self.advance();
                 match &token.literal {
                     Some(LiteralType::Number(n)) => Ok(Expr::Literal {
                         value: Literal::Number(*n),
@@ -90,7 +104,7 @@ impl AstParser {
             }
 
             TokenKind::String => {
-                let token = self.return_prev_than_advance();
+                let token = self.advance();
                 match &token.literal {
                     Some(LiteralType::String(s)) => Ok(Expr::Literal {
                         value: Literal::String(s.to_owned()),
@@ -103,10 +117,14 @@ impl AstParser {
         }
     }
 
+    // unary → ( "!" | "-" ) unary | primary
     pub(crate) fn unary(&mut self) -> Result<Expr, String> {
         match self.tokens[self.current].kind {
             TokenKind::Bang => {
-                self.return_prev_than_advance();
+                self.advance();
+
+                // recursive unary after we find the bang and take the value only if it is Ok else
+                // if it returns error do not take it and it will return whatever the error is .
                 let inner = self.unary()?;
                 Ok(Expr::Unary {
                     op: UnaryOp::Bang,
@@ -114,7 +132,9 @@ impl AstParser {
                 })
             }
             TokenKind::Minus => {
-                self.return_prev_than_advance();
+                self.advance();
+
+                // same as bang
                 let inner = self.unary()?;
                 Ok(Expr::Unary {
                     op: UnaryOp::Minus,
@@ -122,7 +142,40 @@ impl AstParser {
                 })
             }
 
+            // unary → ( "!" | "-" ) unary | primary ----> only alternative is the primary
             _ => self.primary(),
         }
+    }
+
+    pub(crate) fn factor(&mut self) -> Result<Expr, String> {
+        let mut running_expression = self.unary()?;
+
+        while self.tokens[self.current].kind == TokenKind::Slash
+            || self.tokens[self.current].kind == TokenKind::Star
+        {
+            match self.tokens[self.current].kind {
+                TokenKind::Star => {
+                    self.advance();
+                    let unary = self.unary()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::Star,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(unary),
+                    };
+                }
+
+                TokenKind::Slash => {
+                    self.advance();
+                    let unary = self.unary()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::Slash,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(unary),
+                    };
+                }
+                _ => return Err("not a slash or star in factor".to_owned()),
+            }
+        }
+        Ok(running_expression)
     }
 }
