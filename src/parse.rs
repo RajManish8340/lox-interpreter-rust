@@ -36,6 +36,7 @@ pub(crate) fn print_expr(expr: &Expr) -> String {
             print_expr(lhs_expr),
             print_expr(rhs_expr)
         ),
+
         //TODO: rest of the match arms
         _ => "".to_owned(),
     }
@@ -174,6 +175,38 @@ impl AstParser {
                     };
                 }
                 _ => return Err("not a slash or star in factor".to_owned()),
+            }
+        }
+        Ok(running_expression)
+    }
+
+    pub(crate) fn term(&mut self) -> Result<Expr, String> {
+        let mut running_expression = self.factor()?;
+
+        while self.tokens[self.current].kind == TokenKind::Minus
+            || self.tokens[self.current].kind == TokenKind::Plus
+        {
+            match self.tokens[self.current].kind {
+                TokenKind::Minus => {
+                    self.advance();
+                    let factor = self.factor()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::Minus,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(factor),
+                    };
+                }
+
+                TokenKind::Plus => {
+                    self.advance();
+                    let factor = self.factor()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::Plus,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(factor),
+                    };
+                }
+                _ => return Err("not a minus or Plus in term".to_owned()),
             }
         }
         Ok(running_expression)
