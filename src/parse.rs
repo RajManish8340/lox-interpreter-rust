@@ -211,4 +211,62 @@ impl AstParser {
         }
         Ok(running_expression)
     }
+
+    pub(crate) fn comparison(&mut self) -> Result<Expr, String> {
+        let mut running_expression = self.term()?;
+
+        while self.tokens[self.current].kind == TokenKind::Greater
+            || self.tokens[self.current].kind == TokenKind::Less
+            || self.tokens[self.current].kind == TokenKind::GreaterEqual
+            || self.tokens[self.current].kind == TokenKind::LessEqual
+        {
+            match self.tokens[self.current].kind {
+                TokenKind::Greater => {
+                    self.advance();
+                    let term = self.term()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::Greater,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(term),
+                    };
+                }
+
+                TokenKind::GreaterEqual => {
+                    self.advance();
+                    let term = self.term()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::GreaterEqual,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(term),
+                    };
+                }
+
+                TokenKind::Less => {
+                    self.advance();
+                    let term = self.term()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::Less,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(term),
+                    };
+                }
+
+                TokenKind::LessEqual => {
+                    self.advance();
+                    let term = self.term()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::LessEqual,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(term),
+                    };
+                }
+                _ => {
+                    return Err(
+                        "not a less, greater, greater_equal, less_equal in comparison".to_owned(),
+                    );
+                }
+            }
+        }
+        Ok(running_expression)
+    }
 }

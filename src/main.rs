@@ -62,7 +62,7 @@ pub fn main() {
         }
         "parse" => {
             let mut ast_parser = AstParser::new(tokens, 0);
-            match ast_parser.term() {
+            match ast_parser.comparison() {
                 Ok(expr) => println!("{}", print_expr(&expr)),
                 Err(e) => println!("{}", e),
             }
