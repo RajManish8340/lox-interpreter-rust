@@ -35,10 +35,10 @@ pub(crate) fn print_expr(expr: &Expr) -> String {
             print_expr(rhs_expr)
         ),
 
-        //TODO: rest of the match arms
-        _ => "".to_owned(),
+        Expr::Group { expr } => format!("(group {})", print_expr(expr)),
     }
 }
+
 #[derive(Debug, Clone)]
 pub(crate) struct AstParser {
     tokens: Vec<Token>,
@@ -110,6 +110,19 @@ impl AstParser {
                     }),
                     _ => Err("Expected String Literal while parsing tokens".to_owned()),
                 }
+            }
+
+            TokenKind::LeftParen => {
+                self.advance();
+                let inner = self.expression()?;
+                if self.tokens[self.current].kind == TokenKind::RightParen {
+                    self.advance();
+                } else {
+                    return Err("no ending paren for the group )".to_owned());
+                }
+                Ok(Expr::Group {
+                    expr: Box::new(inner),
+                })
             }
 
             _ => Err("Not a Primary token while parsing primary".to_owned()),
@@ -298,5 +311,9 @@ impl AstParser {
             }
         }
         Ok(running_expression)
+    }
+
+    pub(crate) fn expression(&mut self) -> Result<Expr, String> {
+        self.equality()
     }
 }

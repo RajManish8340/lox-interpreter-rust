@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::token::TokenKind;
 
 // TODO:: Equal (assignment), And/Or (logical) — added when statements/control-flow are implemented
