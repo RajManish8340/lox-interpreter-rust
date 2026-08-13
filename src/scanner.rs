@@ -243,7 +243,7 @@ impl Scanner {
                         self.advance();
                     } else {
                         self.tokens.push(Token::new(
-                            TokenKind::EqualEqual,
+                            TokenKind::Equal,
                             c.to_string(),
                             None,
                             self.line,
