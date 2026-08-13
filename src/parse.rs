@@ -1,5 +1,3 @@
-use std::fmt::Alignment::Left;
-
 use crate::{
     ast::{
         BinaryOp, Expr,
@@ -265,6 +263,38 @@ impl AstParser {
                         "not a less, greater, greater_equal, less_equal in comparison".to_owned(),
                     );
                 }
+            }
+        }
+        Ok(running_expression)
+    }
+
+    pub(crate) fn equality(&mut self) -> Result<Expr, String> {
+        let mut running_expression = self.comparison()?;
+
+        while self.tokens[self.current].kind == TokenKind::BangEqual
+            || self.tokens[self.current].kind == TokenKind::EqualEqual
+        {
+            match self.tokens[self.current].kind {
+                TokenKind::BangEqual => {
+                    self.advance();
+                    let comparison = self.comparison()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::BangEqual,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(comparison),
+                    };
+                }
+
+                TokenKind::EqualEqual => {
+                    self.advance();
+                    let comparison = self.comparison()?;
+                    running_expression = Expr::Binary {
+                        op: BinaryOp::EqualEqual,
+                        lhs_expr: Box::new(running_expression),
+                        rhs_expr: Box::new(comparison),
+                    };
+                }
+                _ => return Err("not a BangEqual or EqualEqual in term".to_owned()),
             }
         }
         Ok(running_expression)
