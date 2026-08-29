@@ -348,7 +348,7 @@ impl Scanner {
         }
 
         self.tokens
-            .push(Token::new(TokenKind::Eof, ' '.to_string(), None, self.line));
+            .push(Token::new(TokenKind::Eof, "".to_string(), None, self.line));
         (self.tokens.clone(), self.errors.clone())
     }
 }

@@ -4,10 +4,7 @@ mod errors;
 mod parse;
 mod scanner;
 mod token;
-use std::{
-    fs::{self},
-    hint::assert_unchecked,
-};
+use std::fs::{self};
 
 use clap::Parser;
 
@@ -64,7 +61,7 @@ pub fn main() {
             let mut ast_parser = AstParser::new(tokens, 0);
             match ast_parser.expression() {
                 Ok(expr) => println!("{}", print_expr(&expr)),
-                Err(e) => println!("{}", e),
+                Err(e) => eprintln!("{}", e),
             }
         }
 
