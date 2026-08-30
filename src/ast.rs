@@ -1,5 +1,3 @@
-use crate::token::TokenKind;
-
 // TODO:: Equal (assignment), And/Or (logical) — added when statements/control-flow are implemented
 #[derive(Debug)]
 pub(crate) enum BinaryOp {
@@ -16,22 +14,6 @@ pub(crate) enum BinaryOp {
 }
 
 impl BinaryOp {
-    pub(crate) fn from_token_kind(kind: &TokenKind) -> Option<Self> {
-        match kind {
-            TokenKind::Plus => Some(Self::Plus),
-            TokenKind::Minus => Some(Self::Minus),
-            TokenKind::Star => Some(Self::Star),
-            TokenKind::Slash => Some(Self::Slash),
-            TokenKind::EqualEqual => Some(Self::EqualEqual),
-            TokenKind::BangEqual => Some(Self::BangEqual),
-            TokenKind::Less => Some(Self::Less),
-            TokenKind::LessEqual => Some(Self::LessEqual),
-            TokenKind::Greater => Some(Self::Greater),
-            TokenKind::GreaterEqual => Some(Self::GreaterEqual),
-            _ => None,
-        }
-    }
-
     pub(crate) fn dump(&self) -> String {
         match self {
             Self::Plus => String::from("+"),
@@ -48,7 +30,7 @@ impl BinaryOp {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Literal {
     Bool(bool),
     String(String),

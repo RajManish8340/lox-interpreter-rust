@@ -177,7 +177,7 @@ impl AstParser {
                         value: Literal::Number(*n),
                     }),
                     _ => Err(ParsingError {
-                        token: self.tokens[self.current].clone(),
+                        token: self.previous().clone(),
                         message: "Expected Number Literal while parsing tokens".to_owned(),
                     }),
                 }
@@ -190,39 +190,31 @@ impl AstParser {
                         value: Literal::String(s.to_owned()),
                     }),
                     _ => Err(ParsingError {
-                        token: self.tokens[self.current].clone(),
+                        token: self.previous().clone(),
                         message: "Expected string Literal while parsing tokens".to_owned(),
                     }),
                 }
             }
 
             TokenKind::LeftParen => {
-                self.advance();
+                self.advance(); // advances after seeing (
                 let inner = self.expression()?;
-                match self.consume(
+                // consume ) if it exists else returns next token
+                self.consume(
                     TokenKind::RightParen,
                     "Expect ) after expression".to_owned(),
-                ) {
-                    Ok(_value) => {}
-                    Err(e) => return Err(e),
-                }
-                // if self.tokens[self.current].kind == TokenKind::RightParen {
-                //     self.advance();
-                // } else {
-                //     return Err(ParsingError {
-                //         token: self.tokens[self.current].clone(),
-                //         message: "no ending paren for current group".to_owned(),
-                //     });
-                // }
+                )?;
                 Ok(Expr::Group {
                     expr: Box::new(inner),
                 })
             }
 
-            _ => Err(ParsingError {
-                token: self.tokens[self.current].clone(),
-                message: "not a primary token while parsing primary".to_owned(),
-            }),
+            _ => {
+                return Err(ParsingError {
+                    token: self.tokens[self.current].clone(),
+                    message: "not a primary token while parsing primary".to_owned(),
+                });
+            }
         }
     }
 

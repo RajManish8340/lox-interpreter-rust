@@ -1,6 +1,7 @@
 mod ast;
 mod common;
 mod errors;
+mod eval;
 mod parse;
 mod scanner;
 mod token;
@@ -61,7 +62,10 @@ pub fn main() {
             let mut ast_parser = AstParser::new(tokens, 0);
             match ast_parser.expression() {
                 Ok(expr) => println!("{}", print_expr(&expr)),
-                Err(e) => eprintln!("{}", e),
+                Err(e) => {
+                    eprintln!("{}", e);
+                    std::process::exit(65);
+                }
             }
         }
 
