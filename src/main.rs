@@ -11,6 +11,7 @@ use clap::Parser;
 
 use crate::{
     errors::HAS_ERRORS,
+    eval::{evaluate, print_literal},
     parse::{AstParser, print_expr},
     scanner::Scanner,
 };
@@ -62,6 +63,19 @@ pub fn main() {
             let mut ast_parser = AstParser::new(tokens, 0);
             match ast_parser.expression() {
                 Ok(expr) => println!("{}", print_expr(&expr)),
+                Err(e) => {
+                    eprintln!("{}", e);
+                    std::process::exit(65);
+                }
+            }
+        }
+        "evaluate" => {
+            let mut ast_parser = AstParser::new(tokens, 0);
+            match ast_parser.expression() {
+                Ok(expr) => {
+                    let eval = evaluate(&expr);
+                    println!("{}", print_literal(&eval))
+                }
                 Err(e) => {
                     eprintln!("{}", e);
                     std::process::exit(65);

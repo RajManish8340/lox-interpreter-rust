@@ -41,6 +41,7 @@ pub(crate) fn print_expr(expr: &Expr) -> String {
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct ParsingError {
     token: Token,
     message: String,
