@@ -73,7 +73,9 @@ pub fn main() {
             let mut ast_parser = AstParser::new(tokens, 0);
             match ast_parser.expression() {
                 Ok(expr) => {
+                    println!("{:?}", expr);
                     let eval = evaluate(&expr);
+                    println!("{:?}", eval);
                     println!("{}", print_literal(&eval))
                 }
                 Err(e) => {

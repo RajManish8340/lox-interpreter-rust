@@ -58,8 +58,8 @@ impl Display for ParsingError {
         } else {
             write!(
                 f,
-                "[line{}] {}, Found Token '{}'",
-                self.token.line, self.message, self.token.lexeme,
+                " Found Token '{}' at [line{}] , {},",
+                self.token.lexeme, self.token.line, self.message,
             )
         }
     }
@@ -203,7 +203,7 @@ impl AstParser {
                 // consume ) if it exists else returns next token
                 self.consume(
                     TokenKind::RightParen,
-                    "Expect ) after expression".to_owned(),
+                    "Expected ) after expression".to_owned(),
                 )?;
                 Ok(Expr::Group {
                     expr: Box::new(inner),

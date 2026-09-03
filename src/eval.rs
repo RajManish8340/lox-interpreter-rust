@@ -16,6 +16,6 @@ pub(crate) fn evaluate(expr: &Expr) -> Literal {
         Expr::Literal { value } => value.clone(),
         Expr::Unary { .. } => todo!(),
         Expr::Binary { .. } => todo!(),
-        Expr::Group { .. } => todo!(),
+        Expr::Group { expr } => evaluate(expr),
     }
 }
