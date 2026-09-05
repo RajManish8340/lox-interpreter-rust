@@ -40,7 +40,7 @@ pub(crate) enum Literal {
     Nil,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum UnaryOp {
     Bang,
     Minus,
