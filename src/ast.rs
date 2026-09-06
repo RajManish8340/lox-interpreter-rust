@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 // TODO:: Equal (assignment), And/Or (logical) — added when statements/control-flow are implemented
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub(crate) enum BinaryOp {
     Plus,
     Minus,
@@ -32,7 +32,7 @@ impl BinaryOp {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Literal {
     Bool(bool),
     String(String),

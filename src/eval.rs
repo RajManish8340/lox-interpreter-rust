@@ -1,7 +1,10 @@
-use crate::ast::{
-    Expr,
-    Literal::{self},
-    UnaryOp,
+use crate::{
+    ast::{
+        BinaryOp, Expr,
+        Literal::{self},
+        UnaryOp,
+    },
+    token::LiteralType,
 };
 
 pub(crate) fn print_literal(lit: &Literal) -> String {
@@ -18,6 +21,7 @@ pub(crate) fn print_literal(lit: &Literal) -> String {
 pub(crate) fn evaluate(expr: &Expr) -> Literal {
     match expr {
         Expr::Literal { value } => value.clone(),
+
         Expr::Unary { op, expr } => {
             let lit: Literal = evaluate(expr);
             if op == &UnaryOp::Bang {
@@ -33,7 +37,37 @@ pub(crate) fn evaluate(expr: &Expr) -> Literal {
                 }
             }
         }
-        Expr::Binary { .. } => todo!(),
+
+        Expr::Binary {
+            op,
+            lhs_expr,
+            rhs_expr,
+        } => {
+            let lhs_literal = evaluate(lhs_expr);
+            let rhs_literal = evaluate(rhs_expr);
+
+            match op {
+                BinaryOp::Slash => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Number(l / r),
+                    _ => unreachable!(),
+                },
+
+                BinaryOp::Star => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Number(l * r),
+                    _ => unreachable!(),
+                },
+                BinaryOp::Plus => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Number(l + r),
+                    _ => unreachable!(),
+                },
+                BinaryOp::Minus => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Number(l - r),
+                    _ => unreachable!(),
+                },
+                _ => unreachable!(),
+            }
+        }
+
         Expr::Group { expr } => evaluate(expr),
     }
 }
