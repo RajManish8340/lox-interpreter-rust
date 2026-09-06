@@ -58,6 +58,10 @@ pub(crate) fn evaluate(expr: &Expr) -> Literal {
                 },
                 BinaryOp::Plus => match (lhs_literal, rhs_literal) {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Number(l + r),
+                    (Literal::String(l), Literal::String(r)) => {
+                        let concat = format!("{}{}", l, r);
+                        Literal::String(concat)
+                    }
                     _ => unreachable!(),
                 },
                 BinaryOp::Minus => match (lhs_literal, rhs_literal) {
