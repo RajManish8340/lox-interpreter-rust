@@ -68,6 +68,23 @@ pub(crate) fn evaluate(expr: &Expr) -> Literal {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Number(l - r),
                     _ => unreachable!(),
                 },
+                BinaryOp::Greater => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l > r),
+                    _ => unreachable!(),
+                },
+                BinaryOp::Less => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l < r),
+                    _ => unreachable!(),
+                },
+                BinaryOp::GreaterEqual => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l >= r),
+                    _ => unreachable!(),
+                },
+                BinaryOp::LessEqual => match (lhs_literal, rhs_literal) {
+                    (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l <= r),
+                    _ => unreachable!(),
+                },
+
                 _ => unreachable!(),
             }
         }
