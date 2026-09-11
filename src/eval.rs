@@ -56,6 +56,7 @@ pub(crate) fn evaluate(expr: &Expr) -> Literal {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Number(l * r),
                     _ => unreachable!(),
                 },
+
                 BinaryOp::Plus => match (lhs_literal, rhs_literal) {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Number(l + r),
                     (Literal::String(l), Literal::String(r)) => {
@@ -64,24 +65,33 @@ pub(crate) fn evaluate(expr: &Expr) -> Literal {
                     }
                     _ => unreachable!(),
                 },
+
                 BinaryOp::Minus => match (lhs_literal, rhs_literal) {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Number(l - r),
                     _ => unreachable!(),
                 },
+
                 BinaryOp::Greater => match (lhs_literal, rhs_literal) {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l > r),
+                    (Literal::String(l), Literal::String(r)) => Literal::Bool(l > r),
                     _ => unreachable!(),
                 },
+
                 BinaryOp::Less => match (lhs_literal, rhs_literal) {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l < r),
+                    (Literal::String(l), Literal::String(r)) => Literal::Bool(l < r),
                     _ => unreachable!(),
                 },
+
                 BinaryOp::GreaterEqual => match (lhs_literal, rhs_literal) {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l >= r),
+                    (Literal::String(l), Literal::String(r)) => Literal::Bool(l >= r),
                     _ => unreachable!(),
                 },
+
                 BinaryOp::LessEqual => match (lhs_literal, rhs_literal) {
                     (Literal::Number(l), Literal::Number(r)) => Literal::Bool(l <= r),
+                    (Literal::String(l), Literal::String(r)) => Literal::Bool(l <= r),
                     _ => unreachable!(),
                 },
 
